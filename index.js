@@ -47,6 +47,18 @@ app.get('/api/persons/:id', (req, res) => {
 
 app.post('/api/persons', (req, res) => {
     const newPerson = req.body
+
+    if (newPerson.name === undefined) {
+        return res.status(400).json({ error: 'name missing' })
+    }
+    if (newPerson.number === undefined) {
+        return res.status(400).json({ error: 'number missing' })
+    }
+    if (persons.find(n => 
+        n.name.toLowerCase().trim() === newPerson.name.toLowerCase().trim())) {
+            return res.status(400).json({ error: 'name already exists' })
+        }
+
     newPerson.id = Math.round(Math.random() * 9746274852)
 
     persons = persons.concat(newPerson)
