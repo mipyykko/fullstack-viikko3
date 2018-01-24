@@ -44,7 +44,7 @@ app.get('/info', (req, res) => {
 
 app.get('/api/persons', (req, res) => {
     Person
-        .find({}, {__v: 0})
+        .find({})
         .then(persons => {
             res.json(persons.map(Person.format))
         })
@@ -82,13 +82,35 @@ app.post('/api/persons', (req, res) => {
         .then(savedPerson => {
             res.json(Person.format(savedPerson))
         })
+        .error(_ => {
+            res.status(400).send({ error: '??!' })
+        })
 })
 
 app.delete('/api/persons/:id', (req, res) => {
     Person
-        .deleteOne({ id: req.params.id })
-        .then(c => {
+        .findByIdAndRemove(req.params.id)
+        .then(_ => {
             res.status(204).end()
+        })
+        .error(_ => {
+            res.status(400).send({ error: 'bad id' })
+        })
+})
+
+app.put('/api/persons/:id', (req, res) => {
+    const person = {
+        name: req.body.name,
+        number: req.body.number
+    }
+
+    Person
+        .findByIdAndUpdate(req.params.id, person, { new: true })
+        .then(updatedPerson => {
+            res.json(Person.format(updatedPerson))
+        })
+        .catch(e => {
+            res.status(400).send({ error: 'bad id '})
         })
 })
 

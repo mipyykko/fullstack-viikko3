@@ -12,7 +12,9 @@ const personSchema = new mongoose.Schema({
 
 personSchema.statics.format = function(person) {
     const formattedPerson = { ...person._doc, id: person._id }
-    return person
+    delete formattedPerson._id
+    delete formattedPerson.__v
+    return formattedPerson
 }
 
 const Person = mongoose.model('person', personSchema)
