@@ -35,92 +35,100 @@ app.use(express.static('public'))
 // ]
 
 app.get('/info', (req, res) => {
-    Person
-        .count({})
-        .then(count => {
-            res.send(`<p>puhelinluettelossa ${count} henkilön tiedot</p><p>${new Date().toString()}</p>`)
-        })
+  Person
+    .count({})
+    .then(count => {
+      res.send(`<p>puhelinluettelossa ${count} henkilön tiedot</p><p>${new Date().toString()}</p>`)
+    })
 })
 
 app.get('/api/persons', (req, res) => {
-    Person
-        .find({})
-        .then(persons => {
-            res.json(persons.map(Person.format))
-        })
+  Person
+    .find({})
+    .then(persons => {
+      res.json(persons.map(Person.format))
+    })
 })
 
 app.get('/api/persons/:id', (req, res) => {
-    Person
-        .findById(req.params.id)
-        .then(person => {
-            res.json(Person.format(person))
-        })
-        .catch(_ => {
-            res.status(400).send({ error: 'not found' })
-        })
+  Person
+    .findById(req.params.id)
+    .then(person => {
+      res.json(Person.format(person))
+    })
+    .catch(error => {
+      console.log(error)
+      res.status(400).send({ error: 'not found' })
+    })
 })
 
 app.post('/api/persons', (req, res) => {
-    const body = req.body
+  const body = req.body
 
-    if (body.name === undefined) {
-        return res.status(400).json({ error: 'name missing' })
-    }
-    if (body.number === undefined) {
-        return res.status(400).json({ error: 'number missing' })
-    }
-    const newPerson = new Person({
-        name: body.name,
-        number: body.number
-    }) 
+  if (body.name === undefined) {
+    return res.status(400).json({ error: 'name missing' })
+  }
+  if (body.number === undefined) {
+    return res.status(400).json({ error: 'number missing' })
+  }
+  const newPerson = new Person({
+    name: body.name,
+    number: body.number
+  })
 
-    Person
-        .find({ name: newPerson.name.toLowerCase().trim() })
-        .then(result => {
-            if (result.length > 0) {
-                return res.status(400).json({ error: 'already exists!' })
-            } else {
-                newPerson
-                .save()
-                .then(savedPerson => {
-                    res.json(Person.format(savedPerson))
-                })
-                .catch(_ => {
-                    res.status(400).send({ error: '??!' })
-                })
-            }})
-        .catch(_ => res.status(400).send({ error: '??!?' }))
+  Person
+    .find({ name: newPerson.name.toLowerCase().trim() })
+    .then(result => {
+      if (result.length > 0) {
+        return res.status(400).json({ error: 'already exists!' })
+      } else {
+        newPerson
+          .save()
+          .then(savedPerson => {
+            res.json(Person.format(savedPerson))
+          })
+          .catch(error => {
+            console.log(error)
+            res.status(400).send({ error: '??!' })
+          })
+      }})
+    .catch(error => {
+      console.log(error)
+      res.status(400).send({ error: '??!?' })
+    })
 })
 
 app.delete('/api/persons/:id', (req, res) => {
-    Person
-        .findByIdAndRemove(req.params.id)
-        .then(_ => {
-            res.status(204).end()
-        })
-        .catch(_ => {
-            res.status(400).send({ error: 'bad id' })
-        })
+  Person
+    .findByIdAndRemove(req.params.id)
+    .then(error => {
+      console.log(error)
+      res.status(204).end()
+    })
+    .catch(error => {
+      console.log(error)
+      res.status(400).send({ error: 'bad id' })
+    })
 })
 
 app.put('/api/persons/:id', (req, res) => {
-    const person = {
-        name: req.body.name,
-        number: req.body.number
-    }
+  const person = {
+    name: req.body.name,
+    number: req.body.number
+  }
 
-    Person
-        .findByIdAndUpdate(req.params.id, person, { new: true })
-        .then(updatedPerson => {
-            res.json(Person.format(updatedPerson))
-        })
-        .catch(e => {
-            res.status(400).send({ error: 'bad id '})
-        })
+  Person
+    .findByIdAndUpdate(req.params.id, person, { new: true })
+    .then(updatedPerson => {
+      res.json(Person.format(updatedPerson))
+    })
+    .catch(error => {
+      console.log(error)
+      res.status(400).send({ error: 'bad id ' })
+    })
 })
 
 const PORT = process.env.PORT || 3001
 app.listen(PORT, () => {
-    console.log(`Running on port ${PORT}`)
+  console.log(`Running on port ${PORT}`)
 })
