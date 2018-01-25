@@ -56,6 +56,9 @@ app.get('/api/persons/:id', (req, res) => {
         .then(person => {
             res.json(Person.format(person))
         })
+        .catch(_ => {
+            res.status(400).send({ error: 'not found' })
+        })
 })
 
 app.post('/api/persons', (req, res) => {
@@ -67,24 +70,27 @@ app.post('/api/persons', (req, res) => {
     if (body.number === undefined) {
         return res.status(400).json({ error: 'number missing' })
     }
-/*     if (persons.find(n => 
-        n.name.toLowerCase().trim() === newPerson.name.toLowerCase().trim())) {
-            return res.status(400).json({ error: 'name already exists' })
-        }
- */
     const newPerson = new Person({
         name: body.name,
         number: body.number
     }) 
 
-    newPerson
-        .save()
-        .then(savedPerson => {
-            res.json(Person.format(savedPerson))
-        })
-        .error(_ => {
-            res.status(400).send({ error: '??!' })
-        })
+    Person
+        .find({ name: newPerson.name.toLowerCase().trim() })
+        .then(result => {
+            if (result.length > 0) {
+                return res.status(400).json({ error: 'already exists!' })
+            } else {
+                newPerson
+                .save()
+                .then(savedPerson => {
+                    res.json(Person.format(savedPerson))
+                })
+                .catch(_ => {
+                    res.status(400).send({ error: '??!' })
+                })
+            }})
+        .catch(_ => res.status(400).send({ error: '??!?' }))
 })
 
 app.delete('/api/persons/:id', (req, res) => {
@@ -93,7 +99,7 @@ app.delete('/api/persons/:id', (req, res) => {
         .then(_ => {
             res.status(204).end()
         })
-        .error(_ => {
+        .catch(_ => {
             res.status(400).send({ error: 'bad id' })
         })
 })
